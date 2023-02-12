@@ -1,7 +1,9 @@
 (function () {
 	'use strict';
 
-	console.log('hello Evans');
+	var isArray = Array.isArray;
+
+	console.log(isArray([]));
 
 })();
 //# sourceMappingURL=vue.js.map

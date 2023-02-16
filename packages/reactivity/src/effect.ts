@@ -32,4 +32,13 @@ export function track(target: object, key: unknown) {
 
 export function trigger(target: object, key: unknown, newValue: unknown) {
   console.log('trigger')
+  const depsMap = targetMap.get(target)
+
+  if (!depsMap) return
+
+  const effect = depsMap.get(key) as ReactiveEffect
+
+  if (!effect) return
+
+  effect.fn()
 }

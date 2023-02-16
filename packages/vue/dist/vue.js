@@ -29,6 +29,13 @@ var Vue = (function (exports) {
     }
     function trigger(target, key, newValue) {
         console.log('trigger');
+        var depsMap = targetMap.get(target);
+        if (!depsMap)
+            return;
+        var effect = depsMap.get(key);
+        if (!effect)
+            return;
+        effect.fn();
     }
 
     var get = createGetter();
@@ -43,7 +50,7 @@ var Vue = (function (exports) {
     function createSetter() {
         return function set(target, key, value, receiver) {
             var result = Reflect.set(target, key, value, receiver);
-            trigger();
+            trigger(target, key);
             return result;
         };
     }

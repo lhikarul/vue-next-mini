@@ -1,1 +1,1 @@
-let msg = 'test'
+export { reactive } from './reactive'

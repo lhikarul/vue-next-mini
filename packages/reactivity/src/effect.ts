@@ -1,4 +1,7 @@
-type KeyToDepMap = Map<any, ReactiveEffect>
+import { isArray } from '@vue/shared'
+import { Dep, createDep } from './dep'
+
+type KeyToDepMap = Map<any, Dep>
 
 const targetMap = new WeakMap<any, KeyToDepMap>()
 
@@ -23,15 +26,39 @@ export function track(target: object, key: unknown) {
   if (!depsMap) {
     targetMap.set(target, (depsMap = new Map()))
   }
-  depsMap.set(key, activeEffect)
+
+  let dep = depsMap.get(key)
+
+  if (!dep) {
+    depsMap.set(key, (dep = createDep()))
+  }
+
+  trackEffects(dep)
+}
+
+export function trackEffects(dep: Dep) {
+  dep.add(activeEffect!)
 }
 
 export function trigger(target: object, key: unknown, newValue: unknown) {
   const depsMap = targetMap.get(target)
   if (!depsMap) return
-  const effect = depsMap.get(key) as ReactiveEffect
 
-  if (!effect) return
+  const dep: Dep | undefined = depsMap.get(key)
 
+  if (!dep) return
+
+  triggerEffects(dep)
+}
+
+export function triggerEffects(dep: Dep) {
+  const effects = isArray(dep) ? dep : [...dep]
+
+  for (const effect of effects) {
+    triggerEffect(effect)
+  }
+}
+
+export function triggerEffect(effect: ReactiveEffect) {
   effect.run()
 }

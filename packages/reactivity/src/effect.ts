@@ -1,3 +1,7 @@
+type KeyToDepMap = Map<any, ReactiveEffect>
+
+const targetMap = new WeakMap<any, KeyToDepMap>()
+
 export function effect<T = any>(fn: () => T) {
   const _effect = new ReactiveEffect(fn)
   _effect.run()
@@ -14,7 +18,14 @@ export class ReactiveEffect<T = any> {
 }
 
 export function track(target: object, key: unknown) {
-  console.log('track effect')
+  if (!activeEffect) return
+  let depsMap = targetMap.get(target)
+  if (!depsMap) {
+    targetMap.set(target, (depsMap = new Map()))
+  }
+  depsMap.set(key, activeEffect)
+
+  console.log(targetMap)
 }
 
 export function trigger(target: object, key: unknown, newValue: unknown) {

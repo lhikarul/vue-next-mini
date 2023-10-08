@@ -1,21 +1,31 @@
 var Vue = (function (exports) {
     'use strict';
 
+    var targetMap = new WeakMap();
     function effect(fn) {
         var _effect = new ReactiveEffect(fn);
         _effect.run();
     }
+    var activeEffect;
     var ReactiveEffect = /** @class */ (function () {
         function ReactiveEffect(fn) {
             this.fn = fn;
         }
         ReactiveEffect.prototype.run = function () {
+            activeEffect = this;
             return this.fn();
         };
         return ReactiveEffect;
     }());
     function track(target, key) {
-        console.log('track effect');
+        if (!activeEffect)
+            return;
+        var depsMap = targetMap.get(target);
+        if (!depsMap) {
+            targetMap.set(target, (depsMap = new Map()));
+        }
+        depsMap.set(key, activeEffect);
+        console.log(targetMap);
     }
     function trigger(target, key, newValue) {
         console.log('trigger effect');
@@ -25,7 +35,7 @@ var Vue = (function (exports) {
     function createGetter() {
         return function get(target, key, receiver) {
             var res = Reflect.get(target, key, receiver);
-            track();
+            track(target, key);
             return res;
         };
     }

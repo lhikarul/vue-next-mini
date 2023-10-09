@@ -10,16 +10,15 @@
     <div id="app"></div>
     <script>
       const { ref, effect } = Vue
-      const obj = ref({
-        name: 'Evans'
-      })
+
+      const obj = ref('Evans')
 
       effect(() => {
-        document.querySelector('#app').innerText = obj.value.name
+        document.querySelector('#app').innerText = obj.value
       })
 
       setTimeout(() => {
-        obj.value.name = 'Sherry'
+        obj.value = 'Sherry'
       }, 2000)
     </script>
   </body>

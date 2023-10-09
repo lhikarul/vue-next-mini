@@ -1,6 +1,11 @@
 var Vue = (function (exports) {
     'use strict';
 
+    var isArray = Array.isArray;
+    var isObject = function (val) {
+        return val !== null && typeof val === 'object';
+    };
+
     /******************************************************************************
     Copyright (c) Microsoft Corporation.
 
@@ -54,8 +59,6 @@ var Vue = (function (exports) {
         }
         return to.concat(ar || Array.prototype.slice.call(from));
     }
-
-    var isArray = Array.isArray;
 
     var createDep = function (effects) {
         var dep = new Set(effects);
@@ -158,9 +161,49 @@ var Vue = (function (exports) {
         proxyMap.set(target, proxy);
         return proxy;
     }
+    var toReactive = function (value) {
+        return isObject(value) ? reactive(value) : value;
+    };
+
+    function ref(value) {
+        return createRef(value, false);
+    }
+    function createRef(rawValue, shallow) {
+        if (isRef(rawValue)) {
+            return rawValue;
+        }
+        return new RefImpl(rawValue, shallow);
+    }
+    function isRef(r) {
+        return !!(r && r.__v_isRef === true);
+    }
+    var RefImpl = /** @class */ (function () {
+        function RefImpl(value, __v_isShallow) {
+            this.__v_isShallow = __v_isShallow;
+            this.dep = undefined;
+            this.__v_isRef = true;
+            this._value = __v_isShallow ? value : toReactive(value);
+        }
+        Object.defineProperty(RefImpl.prototype, "value", {
+            get: function () {
+                trackRefValue(this);
+                return this._value;
+            },
+            set: function () { },
+            enumerable: false,
+            configurable: true
+        });
+        return RefImpl;
+    }());
+    function trackRefValue(ref) {
+        if (activeEffect) {
+            trackEffects(ref.dep || (ref.dep = createDep()));
+        }
+    }
 
     exports.effect = effect;
     exports.reactive = reactive;
+    exports.ref = ref;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 

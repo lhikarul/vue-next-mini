@@ -1,5 +1,6 @@
 import { isArray } from '@vue/shared'
 import { Dep, createDep } from './dep'
+import { ComputedRefImpl } from './computed'
 
 type KeyToDepMap = Map<any, Dep>
 
@@ -12,6 +13,8 @@ export function effect<T = any>(fn: () => T) {
 
 export let activeEffect: ReactiveEffect | undefined
 export class ReactiveEffect<T = any> {
+  computed?: ComputedRefImpl<T>
+
   constructor(public fn: () => T) {}
 
   run() {
